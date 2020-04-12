@@ -487,12 +487,16 @@ public:
 	int32_t getLongitude(uint16_t maxWait = getPVTmaxWait);			  //Returns the current longitude in degrees * 10-7. Auto selects between HighPrecision and Regular depending on ability of module.
 	int32_t getAltitude(uint16_t maxWait = getPVTmaxWait);			  //Returns the current altitude in mm above ellipsoid
 	int32_t getAltitudeMSL(uint16_t maxWait = getPVTmaxWait);		  //Returns the current altitude in mm above mean sea level
+	int32_t getVelN(uint16_t maxWait = getPVTmaxWait);				  //Reterns the NED north velocity
+	int32_t getVelE(uint16_t maxWait = getPVTmaxWait);				  //Reterns the NED east velocity
+	int32_t getVelD(uint16_t maxWait = getPVTmaxWait);				  //Reterns the NED down velocity
 	uint8_t getSIV(uint16_t maxWait = getPVTmaxWait);				  //Returns number of sats used in fix
 	uint8_t getFixType(uint16_t maxWait = getPVTmaxWait);			  //Returns the type of fix: 0=no, 3=3D, 4=GNSS+Deadreckoning
 	uint8_t getCarrierSolutionType(uint16_t maxWait = getPVTmaxWait); //Returns RTK solution: 0=no, 1=float solution, 2=fixed solution
 	int32_t getGroundSpeed(uint16_t maxWait = getPVTmaxWait);		  //Returns speed in mm/s
 	int32_t getHeading(uint16_t maxWait = getPVTmaxWait);			  //Returns heading in degrees * 10^-7
 	uint16_t getPDOP(uint16_t maxWait = getPVTmaxWait);				  //Returns positional dillution of precision * 10^-2
+	int16_t getMagDec(uint16_t maxWait = getPVTmaxWait);
 	uint16_t getYear(uint16_t maxWait = getPVTmaxWait);
 	uint8_t getMonth(uint16_t maxWait = getPVTmaxWait);
 	uint8_t getDay(uint16_t maxWait = getPVTmaxWait);
@@ -507,7 +511,10 @@ public:
 	int32_t getHighResLongitude(uint16_t maxWait = getHPPOSLLHmaxWait);
 	int32_t getElipsoid(uint16_t maxWait = getHPPOSLLHmaxWait);
 	int32_t getMeanSeaLevel(uint16_t maxWait = getHPPOSLLHmaxWait);
-	int32_t getGeoidSeparation(uint16_t maxWait = getHPPOSLLHmaxWait);
+	int8_t getLongHp(uint16_t maxWait = getHPPOSLLHmaxWait);
+	int8_t getLatHp(uint16_t maxWait = getHPPOSLLHmaxWait);
+	int8_t getHeightHp(uint16_t maxWait = getHPPOSLLHmaxWait);
+	int8_t getHMSLHp(uint16_t maxWait = getHPPOSLLHmaxWait);
 	uint32_t getHorizontalAccuracy(uint16_t maxWait = getHPPOSLLHmaxWait);
 	uint32_t getVerticalAccuracy(uint16_t maxWait = getHPPOSLLHmaxWait);
 
@@ -635,12 +642,16 @@ public:
 	int32_t longitude;		 //Degrees * 10^-7 (more accurate than floats)
 	int32_t altitude;		 //Number of mm above ellipsoid
 	int32_t altitudeMSL;	 //Number of mm above Mean Sea Level
+	int32_t velN;			 //NED north velocity mm/s
+	int32_t velE;			 //NED east velocity mm/s
+	int32_t velD;			 //NED down velocity mm/s
 	uint8_t SIV;			 //Number of satellites used in position solution
 	uint8_t fixType;		 //Tells us when we have a solution aka lock
 	uint8_t carrierSolution; //Tells us when we have an RTK float/fixed solution
 	int32_t groundSpeed;	 //mm/s
 	int32_t headingOfMotion; //degrees * 10^-5
 	uint16_t pDOP;			 //Positional dilution of precision
+	int16_t magDec;			 //Magnetic Declination
 	uint8_t versionLow;		 //Loaded from getProtocolVersion().
 	uint8_t versionHigh;
 
@@ -649,7 +660,10 @@ public:
 	int32_t highResLongitude;
 	int32_t elipsoid;
 	int32_t meanSeaLevel;
-	int32_t geoidSeparation;
+	int8_t longHp;
+	int8_t latHP;
+	int8_t heightHp;
+	int8_t hMSLHp;
 	uint32_t horizontalAccuracy;
 	uint32_t verticalAccuracy;
 
@@ -739,12 +753,16 @@ private:
 		uint32_t latitude : 1;
 		uint32_t altitude : 1;
 		uint32_t altitudeMSL : 1;
+		uint32_t velN : 1;
+		uint32_t velE : 1;
+		uint32_t velD : 1;
 		uint32_t SIV : 1;
 		uint32_t fixType : 1;
 		uint32_t carrierSolution : 1;
 		uint32_t groundSpeed : 1;
 		uint32_t headingOfMotion : 1;
 		uint32_t pDOP : 1;
+		uint32_t magDec : 1;
 		uint32_t versionNumber : 1;
 	} moduleQueried;
 
@@ -756,7 +774,10 @@ private:
 		uint16_t highResLongitude : 1;
 		uint16_t elipsoid : 1;
 		uint16_t meanSeaLevel : 1;
-		uint16_t geoidSeparation : 1;
+		uint16_t longHp : 1;
+		uint16_t latHP : 1;
+		uint16_t heightHp : 1;
+		uint16_t hMSLHp : 1;
 		uint16_t horizontalAccuracy : 1;
 		uint16_t verticalAccuracy : 1;
 	} highResModuleQueried;

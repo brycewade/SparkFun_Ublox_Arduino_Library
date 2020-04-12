@@ -720,9 +720,13 @@ void SFE_UBLOX_GPS::processUBXpacket(ubxPacket *msg)
       latitude = extractLong(28 - startingSpot);
       altitude = extractLong(32 - startingSpot);
       altitudeMSL = extractLong(36 - startingSpot);
+      velN = extractLong(48 - startingSpot);
+      velE = extractLong(52 - startingSpot);
+      velD = extractLong(56 - startingSpot);
       groundSpeed = extractLong(60 - startingSpot);
       headingOfMotion = extractLong(64 - startingSpot);
-      pDOP = extractLong(76 - startingSpot);
+      pDOP = extractInt(76 - startingSpot);
+      magDec = extractInt(88 - startingSpot);
 
       //Mark all datums as fresh (not read before)
       moduleQueried.gpsiTOW = true;
@@ -739,12 +743,16 @@ void SFE_UBLOX_GPS::processUBXpacket(ubxPacket *msg)
       moduleQueried.latitude = true;
       moduleQueried.altitude = true;
       moduleQueried.altitudeMSL = true;
+      moduleQueried.velN = true;
+      moduleQueried.velE = true;
+      moduleQueried.velD = true;
       moduleQueried.SIV = true;
       moduleQueried.fixType = true;
       moduleQueried.carrierSolution = true;
       moduleQueried.groundSpeed = true;
       moduleQueried.headingOfMotion = true;
       moduleQueried.pDOP = true;
+      moduleQueried.magDec = true;
     }
     else if (msg->id == UBX_NAV_HPPOSLLH && msg->len == 36)
     {
@@ -753,7 +761,10 @@ void SFE_UBLOX_GPS::processUBXpacket(ubxPacket *msg)
       highResLatitude = extractLong(12);
       elipsoid = extractLong(16);
       meanSeaLevel = extractLong(20);
-      geoidSeparation = extractLong(24);
+      longHp = extractByte(24);
+      latHP = extractByte(25);
+      heightHp = extractByte(26);
+      hMSLHp = extractByte(27);
       horizontalAccuracy = extractLong(28);
       verticalAccuracy = extractLong(32);
 
@@ -762,7 +773,10 @@ void SFE_UBLOX_GPS::processUBXpacket(ubxPacket *msg)
       highResModuleQueried.highResLongitude = true;
       highResModuleQueried.elipsoid = true;
       highResModuleQueried.meanSeaLevel = true;
-      highResModuleQueried.geoidSeparation = true;
+      highResModuleQueried.longHp = true;
+      highResModuleQueried.latHp = true;
+      highResModuleQueried.heightHp = true;
+      highResModuleQueried.hMSLHp = true;
       highResModuleQueried.horizontalAccuracy = true;
       highResModuleQueried.verticalAccuracy = true;
       moduleQueried.gpsiTOW = true; // this can arrive via HPPOS too.
@@ -2378,12 +2392,33 @@ int32_t SFE_UBLOX_GPS::getMeanSeaLevel(uint16_t maxWait /* = 250*/)
   return (meanSeaLevel);
 }
 
-int32_t SFE_UBLOX_GPS::getGeoidSeparation(uint16_t maxWait /* = 250*/)
+int8_t SFE_UBLOX_GPS::getLongHp(uint16_t maxWait /* = 250*/)
 {
-  if (highResModuleQueried.geoidSeparation == false)
+  if (highResModuleQueried.longHp == false)
     getHPPOSLLH(maxWait);
-  highResModuleQueried.geoidSeparation = false; //Since we are about to give this to user, mark this data as stale
-  return (geoidSeparation);
+  highResModuleQueried.longHp = false; //Since we are about to give this to user, mark this data as stale
+  return (longHp);
+}
+int8_t SFE_UBLOX_GPS::getLatHp(uint16_t maxWait /* = 250*/)
+{
+  if (highResModuleQueried.latHp == false)
+    getHPPOSLLH(maxWait);
+  highResModuleQueried.latHp = false; //Since we are about to give this to user, mark this data as stale
+  return (latHp);
+}
+int8_t SFE_UBLOX_GPS::getHeightHp(uint16_t maxWait /* = 250*/)
+{
+  if (highResModuleQueried.heightHp == false)
+    getHPPOSLLH(maxWait);
+  highResModuleQueried.heightHp = false; //Since we are about to give this to user, mark this data as stale
+  return (heightHp);
+}
+int8_t SFE_UBLOX_GPS::getHMSLHp(uint16_t maxWait /* = 250*/)
+{
+  if (highResModuleQueried.hMSLHp == false)
+    getHPPOSLLH(maxWait);
+  highResModuleQueried.hMSLHp = false; //Since we are about to give this to user, mark this data as stale
+  return (hMSLHp);
 }
 
 uint32_t SFE_UBLOX_GPS::getHorizontalAccuracy(uint16_t maxWait /* = 250*/)
@@ -2482,6 +2517,42 @@ int32_t SFE_UBLOX_GPS::getAltitudeMSL(uint16_t maxWait)
   return (altitudeMSL);
 }
 
+//Get the current NED north velocity in mm/sec
+//Returns a long representing the number of mm/sec
+int32_t SFE_UBLOX_GPS::getVelN(uint16_t maxWait)
+{
+  if (moduleQueried.velN == false)
+    getPVT(maxWait);
+  moduleQueried.velN = false; //Since we are about to give this to user, mark this data as stale
+  moduleQueried.all = false;
+
+  return (velN);
+}
+
+//Get the current NED east velocity in mm/sec
+//Returns a long representing the number of mm/sec
+int32_t SFE_UBLOX_GPS::getVelE(uint16_t maxWait)
+{
+  if (moduleQueried.velE == false)
+    getPVT(maxWait);
+  moduleQueried.velE = false; //Since we are about to give this to user, mark this data as stale
+  moduleQueried.all = false;
+
+  return (velE);
+}
+
+//Get the current NED north velocity in mm/sec
+//Returns a long representing the number of mm/sec
+int32_t SFE_UBLOX_GPS::getVelD(uint16_t maxWait)
+{
+  if (moduleQueried.velD == false)
+    getPVT(maxWait);
+  moduleQueried.velD = false; //Since we are about to give this to user, mark this data as stale
+  moduleQueried.all = false;
+
+  return (velD);
+}
+
 //Get the number of satellites used in fix
 uint8_t SFE_UBLOX_GPS::getSIV(uint16_t maxWait)
 {
@@ -2551,6 +2622,17 @@ uint16_t SFE_UBLOX_GPS::getPDOP(uint16_t maxWait)
   moduleQueried.all = false;
 
   return (pDOP);
+}
+
+//Get the magnetic declination * 10^-2
+int16_t SFE_UBLOX_GPS::getMagDec(uint16_t maxWait)
+{
+  if (moduleQueried.magDec == false)
+    getPVT(maxWait);
+  moduleQueried.magDec = false; //Since we are about to give this to user, mark this data as stale
+  moduleQueried.all = false;
+
+  return (magDec);
 }
 
 //Get the current protocol version of the Ublox module we're communicating with
@@ -2641,12 +2723,16 @@ void SFE_UBLOX_GPS::flushPVT()
   moduleQueried.latitude = false;
   moduleQueried.altitude = false;
   moduleQueried.altitudeMSL = false;
+  moduleQueried.velN = false;
+  moduleQueried.velE = false;
+  moduleQueried.velD = false;
   moduleQueried.SIV = false;
   moduleQueried.fixType = false;
   moduleQueried.carrierSolution = false;
   moduleQueried.groundSpeed = false;
   moduleQueried.headingOfMotion = false;
   moduleQueried.pDOP = false;
+  moduleQueried.magDec = false;
 }
 
 //Relative Positioning Information in NED frame
